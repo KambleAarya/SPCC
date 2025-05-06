@@ -1,0 +1,72 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define MAX 100
+
+typedef struct {
+    char label[20];
+    int address;
+} Symbol;
+
+Symbol symtab[MAX];
+int sym_count = 0;
+
+int search_symtab(char label[]) {
+    for (int i = 0; i < sym_count; i++) {
+        if (strcmp(symtab[i].label, label) == 0)
+            return i;
+    }
+    return -1;
+}
+
+void insert_symtab(char label[], int address) {
+    if (search_symtab(label) == -1) {
+        strcpy(symtab[sym_count].label, label);
+        symtab[sym_count].address = address;
+        sym_count++;
+    }
+}
+
+void display_symtab() {
+    printf("\n%-10s %-10s\n", "LABEL", "ADDRESS");
+    for (int i = 0; i < sym_count; i++) {
+        printf("%-10s %-10d\n", symtab[i].label, symtab[i].address);
+    }
+}
+
+int main() {
+    FILE *fp = fopen("input.asm", "r");
+    if (!fp) {
+        perror("Cannot open file");
+        return 1;
+    }
+
+    char label[20], opcode[20], operand[20];
+    int locctr = 0;
+
+    while (fscanf(fp, "%s %s %s", label, opcode, operand) != EOF) {
+        if (strcmp(opcode, "START") == 0) {
+            locctr = atoi(operand);
+            if (strcmp(label, "-") != 0)
+                insert_symtab(label, locctr);
+        } else if (strcmp(opcode, "END") == 0) {
+            break;
+        } else {
+            if (strcmp(label, "-") != 0)
+                insert_symtab(label, locctr);
+
+            if (strcmp(opcode, "DS") == 0)
+                locctr += atoi(operand); // Allocate memory
+            else if (strcmp(opcode, "DC") == 0)
+                locctr += 1; // Declare constant
+            else
+                locctr += 1; // Assume default size 1
+        }
+    }
+
+    fclose(fp);
+
+    display_symtab();
+    return 0;
+}
