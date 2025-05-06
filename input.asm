@@ -1,0 +1,7 @@
+START START 0
+LOOP  MOVER AREG, NUM
+-     ADD   AREG, TEMP
+-     MOVEM AREG, TEMP
+NUM   DC    5
+TEMP  DS    1
+-     END   -
